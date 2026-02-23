@@ -8,15 +8,29 @@ package org.microg.gms.maps.hms.utils
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.SharedPreferences
 import android.view.LayoutInflater
 import androidx.annotation.RequiresApi
 import com.huawei.hms.maps.MapClientIdentify
 import com.huawei.hms.maps.utils.MapClientUtil
 import org.microg.gms.common.Constants
+import org.microg.gms.common.GmsPackageResolver
 import java.io.File
 
-class MapContext(private val context: Context) : ContextWrapper(context.createPackageContext(Constants.GMS_PACKAGE_NAME, Context.CONTEXT_INCLUDE_CODE or Context.CONTEXT_IGNORE_SECURITY)) {
+private fun createMapPackageContext(context: Context): Context {
+    return try {
+        GmsPackageResolver.createPackageContext(
+            context,
+            Context.CONTEXT_INCLUDE_CODE or Context.CONTEXT_IGNORE_SECURITY,
+            Constants.GMS_PACKAGE_NAME
+        )
+    } catch (e: PackageManager.NameNotFoundException) {
+        context
+    }
+}
+
+class MapContext(private val context: Context) : ContextWrapper(createMapPackageContext(context)) {
     private var layoutInflater: LayoutInflater? = null
     private val appContext: Context
         get() = context.applicationContext ?: context

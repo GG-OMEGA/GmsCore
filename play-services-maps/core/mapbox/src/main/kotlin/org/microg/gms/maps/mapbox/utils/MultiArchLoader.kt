@@ -22,6 +22,7 @@ import android.content.pm.ApplicationInfo
 import android.util.Log
 import com.mapbox.mapboxsdk.LibraryLoader
 import org.microg.gms.common.Constants
+import org.microg.gms.common.GmsPackageResolver
 import org.microg.gms.common.PackageUtils
 import java.io.*
 import java.util.zip.ZipFile
@@ -42,7 +43,12 @@ class MultiArchLoader(private val mapContext: Context, private val appContext: C
                 val cacheFileStamp = File("${appContext.cacheDir.absolutePath}/.gmscore/$path.stamp")
                 val cacheVersion = kotlin.runCatching { cacheFileStamp.readText() }.getOrNull()
                 // TODO: Use better version indicator
-                val mapVersion = PackageUtils.versionName(mapContext, Constants.GMS_PACKAGE_NAME)
+                val mapPackageName = GmsPackageResolver.resolveInstalledPackage(
+                    mapContext,
+                    mapContext.packageName,
+                    Constants.GMS_PACKAGE_NAME
+                ) ?: mapContext.packageName
+                val mapVersion = PackageUtils.versionName(mapContext, mapPackageName)
                 val apkFile = File(mapContext.packageCodePath)
                 if (!cacheFile.exists() || cacheVersion == null || cacheVersion != mapVersion) {
                     val zipFile = ZipFile(apkFile)

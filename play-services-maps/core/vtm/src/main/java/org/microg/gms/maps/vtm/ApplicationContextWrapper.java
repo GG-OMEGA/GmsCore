@@ -21,6 +21,7 @@ import android.content.ContextWrapper;
 import android.content.pm.PackageManager;
 
 import org.microg.gms.common.Constants;
+import org.microg.gms.common.GmsPackageResolver;
 
 public class ApplicationContextWrapper extends ContextWrapper {
     private Context applicationContext;
@@ -32,7 +33,11 @@ public class ApplicationContextWrapper extends ContextWrapper {
 
     public static ApplicationContextWrapper gmsContextWithAttachedApplicationContext(Context applicationContext) {
         try {
-            Context context = applicationContext.createPackageContext(Constants.GMS_PACKAGE_NAME, CONTEXT_INCLUDE_CODE & CONTEXT_IGNORE_SECURITY);
+            Context context = GmsPackageResolver.createPackageContext(
+                    applicationContext,
+                    CONTEXT_INCLUDE_CODE & CONTEXT_IGNORE_SECURITY,
+                    Constants.GMS_PACKAGE_NAME
+            );
             return new ApplicationContextWrapper(context, applicationContext);
         } catch (PackageManager.NameNotFoundException e) {
             throw new RuntimeException(e);

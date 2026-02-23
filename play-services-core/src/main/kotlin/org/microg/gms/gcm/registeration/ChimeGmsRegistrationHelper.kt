@@ -33,6 +33,7 @@ import kotlinx.coroutines.withContext
 import org.microg.gms.auth.AuthConstants
 import org.microg.gms.checkin.LastCheckinInfo
 import org.microg.gms.common.Constants
+import org.microg.gms.common.GmsPackageResolver
 import org.microg.gms.common.Utils
 import org.microg.gms.gcm.GMS_NOTS_BASE_URL
 import org.microg.gms.gcm.GMS_NOTS_OAUTH_SERVICE
@@ -49,6 +50,10 @@ private const val DEFAULT_CHANNEL_NUMBER = "-1"
 
 class ChimeGmsRegistrationHelper(val context: Context) {
     private val chimeAccountsStore = context.getSharedPreferences("chime_gms_accounts", Context.MODE_PRIVATE)
+    private val runtimeGmsPackageName: String by lazy {
+        GmsPackageResolver.resolveInstalledPackage(context, context.packageName, Constants.GMS_PACKAGE_NAME)
+            ?: context.packageName
+    }
 
     suspend fun handleRegistration(regId: String, reason: RegistrationReason = RegistrationReason.ACCOUNT_CHANGED): List<Account> {
         Log.d(TAG, "handle Account Registration regId:$regId")
@@ -118,7 +123,7 @@ class ChimeGmsRegistrationHelper(val context: Context) {
             channel = Channel.GCM_DEVICE_PUSH
             appRegistrationContainer = AppRegistrationContainer.build {
                 appRegistration = AppRegistration.build {
-                    packageName = Constants.GMS_PACKAGE_NAME
+                    packageName = runtimeGmsPackageName
                     androidId = LastCheckinInfo.read(context).androidId
                     regId = gmsRegId
                 }
@@ -128,7 +133,7 @@ class ChimeGmsRegistrationHelper(val context: Context) {
     private fun buildDeviceContext() = GmsDeviceContext.build {
         languageTag = if (SDK_INT >= 24) LocaleList.getDefault().get(0).toLanguageTag() else Locale.getDefault().language
         gmsDeviceProfile = GmsDeviceProfile.build {
-            val packageInfo = context.packageManager.getPackageInfo(Constants.GMS_PACKAGE_NAME, 0)
+            val packageInfo = context.packageManager.getPackageInfo(runtimeGmsPackageName, 0)
             density = context.resources.displayMetrics.density
             versionName = packageInfo.versionName
             release = Build.VERSION.RELEASE

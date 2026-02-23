@@ -7,7 +7,6 @@ import android.os.Build.VERSION.SDK_INT
 import android.util.Log
 import kotlinx.coroutines.runBlocking
 import org.microg.gms.auth.login.LoginActivity
-import org.microg.gms.common.Constants
 import org.microg.gms.cryptauth.isLockscreenConfigured
 import org.microg.gms.cryptauth.sendDeviceScreenlockState
 import org.microg.gms.gcm.GcmDatabase
@@ -105,7 +104,7 @@ fun Context.isGcmEnabled(): Boolean = GcmPrefs.get(this).isEnabled
 fun Context.isMicrogAppGcmAllowed(): Boolean {
     val gcmPrefs = GcmPrefs.get(this)
     val gcmDatabaseEntry = GcmDatabase(this).use {
-        it.getApp(Constants.GMS_PACKAGE_NAME)
+        it.getApp(packageName)
     }
     return !(gcmDatabaseEntry != null &&
             !gcmDatabaseEntry.allowRegister ||
