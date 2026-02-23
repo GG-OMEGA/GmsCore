@@ -1236,6 +1236,7 @@
                 <action android:name="com.google.android.gms.fitness.GoogleFitnessService.START" />
                 <action android:name="com.google.android.gms.fitness.InternalApi" />
                 <action android:name="com.google.android.gms.fitness.SensorsApi" />
+                <action android:name="com.google.android.gms.fonts.service.START" />
                 <action android:name="app.revanced.android.gms.fonts.service.START" />
                 <action android:name="com.google.android.gms.freighter.service.START" />
                 <action android:name="com.google.android.gms.growth.service.START" />
