@@ -19,9 +19,7 @@ package org.microg.gms.iid;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.os.ConditionVariable;
 import android.os.Handler;
@@ -37,6 +35,7 @@ import android.util.Log;
 
 import com.google.android.gms.iid.InstanceID;
 import com.google.android.gms.iid.MessengerCompat;
+import org.microg.gms.common.GmsPackageResolver;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -49,7 +48,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION.SDK_INT;
 import static com.google.android.gms.iid.InstanceID.ERROR_BACKOFF;
 import static com.google.android.gms.iid.InstanceID.ERROR_MISSING_INSTANCEID_SERVICE;
@@ -106,24 +104,17 @@ public class InstanceIdRpc {
         if (iidPackageName != null) {
             return iidPackageName;
         }
-        PackageManager packageManager = context.getPackageManager();
-        for (ResolveInfo resolveInfo : packageManager.queryIntentServices(new Intent(ACTION_C2DM_REGISTER), 0)) {
-            if (packageManager.checkPermission(PERMISSION_RECEIVE, resolveInfo.serviceInfo.packageName) == PERMISSION_GRANTED) {
-                return iidPackageName = resolveInfo.serviceInfo.packageName;
-            }
-        }
-        try {
-            ApplicationInfo appInfo = packageManager.getApplicationInfo(GMS_PACKAGE_NAME, 0);
-            return iidPackageName = appInfo.packageName;
-        } catch (PackageManager.NameNotFoundException ignored) {
-        }
-        try {
-            ApplicationInfo appInfo = packageManager.getApplicationInfo(GSF_PACKAGE_NAME, 0);
-            return iidPackageName = appInfo.packageName;
-        } catch (PackageManager.NameNotFoundException ex3) {
+        iidPackageName = GmsPackageResolver.resolveServicePackage(
+                context,
+                ACTION_C2DM_REGISTER,
+                PERMISSION_RECEIVE,
+                GMS_PACKAGE_NAME,
+                GSF_PACKAGE_NAME
+        );
+        if (iidPackageName == null) {
             Log.w(TAG, "Both Google Play Services and legacy GSF package are missing");
-            return null;
         }
+        return iidPackageName;
     }
 
     private static int getGmsVersionCode(final Context context) {

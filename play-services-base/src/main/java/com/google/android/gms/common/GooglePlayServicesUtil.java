@@ -27,6 +27,7 @@ import android.content.res.Resources;
 import android.util.Log;
 
 import org.microg.gms.common.Constants;
+import org.microg.gms.common.GmsPackageResolver;
 import org.microg.gms.common.PublicApi;
 
 /**
@@ -59,13 +60,6 @@ public class GooglePlayServicesUtil {
      * Package name for Google Play Store.
      */
     public static final String GOOGLE_PLAY_STORE_PACKAGE = "com.android.vending";
-
-    private static String[] getGmsPackageCandidates() {
-        return new String[] {
-                Constants.USER_MICROG_PACKAGE_NAME,
-                Constants.GMS_PACKAGE_NAME
-        };
-    }
 
     /**
      * Returns a dialog to address the provided errorCode. The returned dialog displays a localized
@@ -144,13 +138,11 @@ public class GooglePlayServicesUtil {
      * @return The Context object of the Buddy APK or null if the Buddy APK is not installed on the device.
      */
     public static Context getRemoteContext(Context context) {
-        for (String packageName : getGmsPackageCandidates()) {
-            try {
-                return context.createPackageContext(packageName, PACKAGE_CONTEXT_FLAGS);
-            } catch (PackageManager.NameNotFoundException ignored) {
-            }
+        try {
+            return GmsPackageResolver.createPackageContext(context, PACKAGE_CONTEXT_FLAGS);
+        } catch (PackageManager.NameNotFoundException ignored) {
+            return null;
         }
-        return null;
     }
 
     /**
@@ -159,7 +151,7 @@ public class GooglePlayServicesUtil {
      * @return The Resources object of the Buddy APK or null if the Buddy APK is not installed on the device.
      */
     public static Resources getRemoteResources(Context context) {
-        for (String packageName : getGmsPackageCandidates()) {
+        for (String packageName : GmsPackageResolver.getCorePackageCandidates()) {
             try {
                 return context.getPackageManager().getResourcesForApplication(packageName);
             } catch (PackageManager.NameNotFoundException ignored) {

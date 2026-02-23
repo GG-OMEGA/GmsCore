@@ -246,32 +246,10 @@ public class MultiConnectionKeeper {
             this.requireMicrog = requireMicrog;
         }
 
-        private String getMappedAction(String action) {
-            if (action == null) return null;
-            final String googlePrefix = "com.google.android.gms";
-            final String repackagedPrefix = USER_MICROG_PACKAGE_NAME;
-
-            if (action.startsWith(googlePrefix + ".")) {
-                return repackagedPrefix + action.substring(googlePrefix.length());
-            }
-            if (action.startsWith(repackagedPrefix + ".")) {
-                return googlePrefix + action.substring(repackagedPrefix.length());
-            }
-            return null;
-        }
-
-        private String[] getActionCandidates(String action) {
-            String mappedAction = getMappedAction(action);
-            if (mappedAction == null || mappedAction.equals(action)) {
-                return new String[]{action};
-            }
-            return new String[]{action, mappedAction};
-        }
-
         private Intent getIntent() {
             ResolveInfo resolveInfo;
             PackageManager pm = context.getPackageManager();
-            String[] actionCandidates = getActionCandidates(actionString);
+            String[] actionCandidates = GmsPackageResolver.getActionCandidates(actionString);
             if (!Objects.equals(targetPackage, context.getPackageName())) {
                 try {
                     if (isSystemGoogleOrMicrogSig(pm, targetPackage)) {

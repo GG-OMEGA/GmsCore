@@ -19,17 +19,14 @@ package org.microg.gms.gcm;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
-import android.util.Log;
 
 import com.google.android.gms.iid.InstanceID;
+import org.microg.gms.common.GmsPackageResolver;
 
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
@@ -37,7 +34,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static com.google.android.gms.gcm.GoogleCloudMessaging.ERROR_SERVICE_NOT_AVAILABLE;
 import static org.microg.gms.common.Constants.GMS_PACKAGE_NAME;
 import static org.microg.gms.common.Constants.GSF_PACKAGE_NAME;
@@ -86,23 +82,14 @@ public class CloudMessagingRpc {
         if (gcmPackageName != null) {
             return gcmPackageName;
         }
-        PackageManager packageManager = context.getPackageManager();
-        for (ResolveInfo resolveInfo : packageManager.queryIntentServices(new Intent(ACTION_C2DM_REGISTER), 0)) {
-            if (packageManager.checkPermission(PERMISSION_RECEIVE, resolveInfo.serviceInfo.packageName) == PERMISSION_GRANTED) {
-                return gcmPackageName = resolveInfo.serviceInfo.packageName;
-            }
-        }
-        try {
-            ApplicationInfo appInfo = packageManager.getApplicationInfo(GMS_PACKAGE_NAME, 0);
-            return gcmPackageName = appInfo.packageName;
-        } catch (PackageManager.NameNotFoundException ignored) {
-        }
-        try {
-            ApplicationInfo appInfo = packageManager.getApplicationInfo(GSF_PACKAGE_NAME, 0);
-            return gcmPackageName = appInfo.packageName;
-        } catch (PackageManager.NameNotFoundException ex3) {
-            return null;
-        }
+        gcmPackageName = GmsPackageResolver.resolveServicePackage(
+                context,
+                ACTION_C2DM_REGISTER,
+                PERMISSION_RECEIVE,
+                GMS_PACKAGE_NAME,
+                GSF_PACKAGE_NAME
+        );
+        return gcmPackageName;
     }
 
     public void close() {
