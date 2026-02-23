@@ -348,7 +348,7 @@ class GamesUiFragment : BottomSheetDialogFragment() {
             }
         }?.adapter = LeaderboardsAdapter(context, loadLeaderboards) { leaderboard ->
             val intent = Intent(ACTION_VIEW_LEADERBOARDS_SCORES)
-            intent.setPackage(Constants.GMS_PACKAGE_NAME)
+            intent.setPackage(context.packageName)
             intent.putExtra(EXTRA_GAME_PACKAGE_NAME, clientPackageName)
             intent.putExtra(EXTRA_ACCOUNT_KEY, Integer.toHexString(currentAccount?.name.hashCode()))
             intent.putExtra(EXTRA_LEADERBOARD_ID, leaderboard.id)

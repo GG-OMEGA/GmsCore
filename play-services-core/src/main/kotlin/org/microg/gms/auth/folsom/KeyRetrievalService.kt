@@ -35,7 +35,6 @@ import com.google.android.gms.common.internal.GetServiceRequest
 import com.google.android.gms.common.internal.IGmsCallbacks
 import org.microg.gms.BaseService
 import org.microg.gms.auth.folsom.ui.GenericActivity
-import org.microg.gms.common.Constants.GMS_PACKAGE_NAME
 import org.microg.gms.common.GmsService
 import org.microg.gms.utils.warnOnTransactionIssues
 
@@ -149,7 +148,7 @@ class KeyRetrievalServiceImpl(val context: Context) : IKeyRetrievalService.Stub(
         callback: IKeyRetrievalCallback?, accountName: String?, type: Int, metadata: ApiMetadata?
     ) {
         Log.d(TAG, "Not implemented startUxFlow accountName:$accountName type:$type metadata:$metadata")
-        val intent = Intent().apply { setClassName(GMS_PACKAGE_NAME, GenericActivity::class.java.name) }
+        val intent = Intent().apply { setClassName(context.packageName, GenericActivity::class.java.name) }
         val pendingIntent = PendingIntentCompat.getActivity(context, 0, intent, FLAG_UPDATE_CURRENT, false)
         val states = Status(CommonStatusCodes.SUCCESS, "UX flow PendingIntent retrieved.", pendingIntent)
         callback?.onResult(states)

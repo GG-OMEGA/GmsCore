@@ -580,7 +580,7 @@ class GamesServiceImpl(val context: Context, override val lifecycle: Lifecycle, 
 
     private fun getGamesIntent(action: String, block: Intent.() -> Unit = {}) = Intent(action).apply {
         // Jump to internal page implementation
-        setPackage(Constants.GMS_PACKAGE_NAME)
+        setPackage(context.packageName)
         putExtra(EXTRA_ACCOUNT_KEY, Integer.toHexString(account.name.hashCode()))
         putExtra(EXTRA_GAME_PACKAGE_NAME, packageName)
         addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)

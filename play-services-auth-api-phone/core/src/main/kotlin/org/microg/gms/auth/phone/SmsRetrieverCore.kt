@@ -140,7 +140,7 @@ class SmsRetrieverCore(private val context: Context, override val lifecycle: Lif
 
     private fun sendUserConsentBroadcast(request: SmsRetrieverRequest, messageBody: String) {
         val userConsentIntent = Intent(context, UserConsentPromptActivity::class.java)
-        userConsentIntent.setPackage(Constants.GMS_PACKAGE_NAME)
+        userConsentIntent.setPackage(context.packageName)
         userConsentIntent.putExtra(EXTRA_MESSENGER, Messenger(object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(msg: Message) {
                 if (Binder.getCallingUid() == Process.myUid()) {

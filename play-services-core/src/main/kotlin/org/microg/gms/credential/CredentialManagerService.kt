@@ -63,7 +63,7 @@ private class CredentialManagerServiceImpl(private val context: Context, overrid
         lifecycleScope.launchWhenStarted {
             runCatching {
                 val intent = Intent().apply {
-                    setClassName(Constants.GMS_PACKAGE_NAME, PASSWORD_MANAGER_CLASS_NAME)
+                    setClassName(context.packageName, PASSWORD_MANAGER_CLASS_NAME)
                     putExtra(EXTRA_KEY_ACCOUNT_NAME, params.account.name)
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
