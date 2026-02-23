@@ -246,33 +246,65 @@ public class MultiConnectionKeeper {
             this.requireMicrog = requireMicrog;
         }
 
+        private String getMappedAction(String action) {
+            if (action == null) return null;
+            final String googlePrefix = "com.google.android.gms";
+            final String repackagedPrefix = USER_MICROG_PACKAGE_NAME;
+
+            if (action.startsWith(googlePrefix + ".")) {
+                return repackagedPrefix + action.substring(googlePrefix.length());
+            }
+            if (action.startsWith(repackagedPrefix + ".")) {
+                return googlePrefix + action.substring(repackagedPrefix.length());
+            }
+            return null;
+        }
+
+        private String[] getActionCandidates(String action) {
+            String mappedAction = getMappedAction(action);
+            if (mappedAction == null || mappedAction.equals(action)) {
+                return new String[]{action};
+            }
+            return new String[]{action, mappedAction};
+        }
+
         private Intent getIntent() {
-            Intent intent;
             ResolveInfo resolveInfo;
             PackageManager pm = context.getPackageManager();
+            String[] actionCandidates = getActionCandidates(actionString);
             if (!Objects.equals(targetPackage, context.getPackageName())) {
-                intent = new Intent(actionString).setPackage(targetPackage);
                 try {
-                    if ((resolveInfo = context.getPackageManager().resolveService(intent, 0)) != null) {
-                        if (requireMicrog && !isMicrog(resolveInfo)) {
-                            Log.w(TAG, "GMS service found for " + actionString + " but looks not like microG");
-                        } else {
-                            if (isSystemGoogleOrMicrogSig(pm, targetPackage)) {
-                                Log.d(TAG, "GMS service found for " + actionString);
-                                return intent;
-                            } else {
-                                Log.w(TAG, "GMS service found for " + actionString + " but is not system, and doesn't have microG or Google signature");
+                    if (isSystemGoogleOrMicrogSig(pm, targetPackage)) {
+                        for (String actionCandidate : actionCandidates) {
+                            Intent targetIntent = new Intent(actionCandidate).setPackage(targetPackage);
+                            resolveInfo = pm.resolveService(targetIntent, 0);
+                            if (resolveInfo == null) continue;
+                            if (requireMicrog && !isMicrog(resolveInfo)) {
+                                Log.w(TAG, "GMS service found for " + actionCandidate + " but looks not like microG");
+                                continue;
                             }
+                            if (!Objects.equals(actionCandidate, actionString)) {
+                                Log.d(TAG, "Falling back to action alias " + actionCandidate + " for " + actionString);
+                            }
+                            Log.d(TAG, "GMS service found for " + actionCandidate);
+                            return targetIntent;
                         }
+                    } else {
+                        Log.w(TAG, targetPackage + " found but is not system, and doesn't have microG or Google signature");
                     }
                 } catch (PackageManager.NameNotFoundException e) {
                     Log.d(TAG, targetPackage + " not found");
                 }
             }
-            intent = new Intent(actionString).setPackage(context.getPackageName());
-            if (context.getPackageManager().resolveService(intent, 0) != null) {
-                Log.d(TAG, "Found service for " + actionString + " in self package, using it instead");
-                return intent;
+            for (String actionCandidate : actionCandidates) {
+                Intent selfIntent = new Intent(actionCandidate).setPackage(context.getPackageName());
+                if (pm.resolveService(selfIntent, 0) != null) {
+                    if (!Objects.equals(actionCandidate, actionString)) {
+                        Log.d(TAG, "Using self action alias " + actionCandidate + " for " + actionString);
+                    }
+                    Log.d(TAG, "Found service for " + actionCandidate + " in self package, using it instead");
+                    return selfIntent;
+                }
             }
             return null;
         }
