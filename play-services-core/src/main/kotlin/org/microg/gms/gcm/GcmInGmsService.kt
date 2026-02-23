@@ -270,7 +270,7 @@ class GcmInGmsService : LifecycleService() {
         val content = notificationData.content ?: return
         val intentExtras = notificationData.intentActions?.primaryPayload?.extras ?: return
         val intent = Intent(this, MainActivity::class.java).apply {
-            `package` = Constants.GMS_PACKAGE_NAME
+            `package` = this@GcmInGmsService.packageName
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK
             intentExtras.forEach { putExtra(it.key, it.value_) }
             putExtra(KEY_NOTIFICATION_ID, notificationId)
@@ -311,11 +311,7 @@ class GcmInGmsService : LifecycleService() {
         val intent = Intent(GcmConstants.ACTION_GCM_SEND).apply {
             setPackage(this@GcmInGmsService.packageName)
             putExtras(extras)
-            putExtra(
-                GcmConstants.EXTRA_APP,
-                Intent().apply { setPackage(this@GcmInGmsService.packageName) }
-                    .let { PendingIntentCompat.getBroadcast(this@GcmInGmsService, 0, it, 0, false) },
-            )
+            putExtra(GcmConstants.EXTRA_APP, Intent().apply { setPackage(this@GcmInGmsService.packageName) }.let { PendingIntentCompat.getBroadcast(this@GcmInGmsService, 0, it, 0, false) })
         }.also {
             it.putExtra(GcmConstants.EXTRA_MESSENGER, Messenger(object : Handler(Looper.getMainLooper()) {
                 override fun handleMessage(msg: Message) {

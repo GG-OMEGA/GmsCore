@@ -98,7 +98,7 @@ class AssistedSignInActivity : AppCompatActivity() {
         Log.d(TAG, "prepareSignIn options:$googleSignInOptions")
         val signInConfiguration = SignInConfiguration(clientPackageName!!, googleSignInOptions!!)
         val intent = Intent(this, AuthSignInActivity::class.java).apply {
-            `package` = Constants.GMS_PACKAGE_NAME
+            `package` = packageName
             putExtra("config", signInConfiguration)
             putExtra("nonce", signInIntentRequest?.nonce)
         }

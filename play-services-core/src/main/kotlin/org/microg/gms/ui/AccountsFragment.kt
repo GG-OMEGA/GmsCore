@@ -67,7 +67,7 @@ class AccountsFragment : PreferenceFragmentCompat() {
 
     private fun registerGcmInGms() {
         Intent(ACTION_GCM_REGISTER_ALL_ACCOUNTS).apply {
-            `package` = Constants.GMS_PACKAGE_NAME
+            `package` = requireContext().packageName
         }.let { requireContext().sendBroadcast(it) }
     }
 
